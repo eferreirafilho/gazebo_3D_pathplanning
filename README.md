@@ -13,6 +13,8 @@ run file load_pcd.py
   - generates milestones
   - saves point_cloud_prm.npy
   - saves milestone_roadmap_prm.pickle
+
+
 run file construct_prm.py
   - checks collisions and generate PRM
   - save prm_graph.pickle
