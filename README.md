@@ -4,6 +4,9 @@
 Uses the UAV repository and its dependencies:
 http://github.com/RAFALAMAO/hector-quadrotor-noetic
 
+# To use the path planning: 
+Add folders found in this repo replacing original http://github.com/RAFALAMAO/hector-quadrotor-noetic files when asked
+
 # To launch the UAV and gazebo world:
 roslaunch hector_quadrotor_demo outdoor_church.launch
 
