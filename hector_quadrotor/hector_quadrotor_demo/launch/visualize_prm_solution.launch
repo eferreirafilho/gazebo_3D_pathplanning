@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <node pkg="hector_quadrotor_demo" type="vizualize_3Dnetwork.py" name="visualize_path_solution" output="screen"> </node>
+
+</launch>

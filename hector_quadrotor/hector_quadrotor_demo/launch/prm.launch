@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+  <rosparam command="load" file="$(find hector_quadrotor_demo)/params/goal.yaml" />
+
+  <node pkg="hector_quadrotor_demo" type="query_PRM.py" name="path_planning" output="screen"> </node>
+
+
+  <!-- <node pkg="hector_quadrotor_demo" type="vizualize_3Dnetwork.py" name="vizualize_path_solution" output="screen"> </node> -->
+
+  <arg name="node_start_delay" default="2.0" />  
+  <node name="vizualize_path_solution" pkg="hector_quadrotor_demo" type="visualize_3Dnetwork.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " />
+</launch>
