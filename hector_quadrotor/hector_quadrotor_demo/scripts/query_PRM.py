@@ -41,7 +41,7 @@ class QueryPRM(object):
                 while not rospy.is_shutdown():
                         while not self.goal_reached():
                                 self.send_uav_to_wp(self.current_target_wp)
-                                self.rate.sleep()
+                                # self.rate.sleep()
                         HOVER_TIME=200
                         for i in range(HOVER_TIME): # Hover in goal position for some time
                                 self.rate.sleep()
@@ -94,19 +94,26 @@ class QueryPRM(object):
                 self.G.add_edge(node, closest_node)
                            
         def send_uav_to_wp(self, wp):
-                KP=0.1 # Proporcional gain
-                KI=0.01 # Integral gain
+                KP=0.2 # Proporcional gain
+                KI=0.0001 # Integral gain
+                dist = np.linalg.norm(np.asarray([self.path_x[wp], self.path_y[wp], self.path_z[wp]]) - np.asarray([self.current_position.x, self.current_position.y, self.current_position.z]))
                 self.cmd_velocity_to_publish.linear.x = KP*(self.path_x[wp]-self.current_position.x) + KI*self.cumulative_error_position.x
                 self.cmd_velocity_to_publish.linear.y = KP*(self.path_y[wp]-self.current_position.y) + KI*self.cumulative_error_position.y
                 self.cmd_velocity_to_publish.linear.z = KP*(self.path_z[wp]-self.current_position.z) + KI*self.cumulative_error_position.z
-                self.cumulative_error_position.x = self.cumulative_error_position.x + self.cmd_velocity_to_publish.linear.x
-                self.cumulative_error_position.y = self.cumulative_error_position.y + self.cmd_velocity_to_publish.linear.y
-                self.cumulative_error_position.z = self.cumulative_error_position.z + self.cmd_velocity_to_publish.linear.z
+                if dist<5:
+                        self.cumulative_error_position.x = self.cumulative_error_position.x + self.path_x[wp]-self.current_position.x
+                        self.cumulative_error_position.y = self.cumulative_error_position.y + self.path_y[wp]-self.current_position.y
+                        self.cumulative_error_position.z = self.cumulative_error_position.z + self.path_z[wp]-self.current_position.z
+                # print('self.cumulative_error_position.x: ' + str(self.cumulative_error_position.x))
+                # print('self.cumulative_error_position.y: ' + str(self.cumulative_error_position.y))
+                # print('self.cumulative_error_position.z: ' + str(self.cumulative_error_position.z))
                 
                 self.pub.publish(self.cmd_velocity_to_publish)
                 WP_ARRIVED_THREADSHOLD = 1
-                dist = np.linalg.norm(np.asarray([self.path_x[wp], self.path_y[wp], self.path_z[wp]]) - np.asarray([self.current_position.x, self.current_position.y, self.current_position.z]))
                 rospy.loginfo_throttle(3, 'Distance to waypoint ' + str(wp) + ': ' + str(dist))
+                rospy.loginfo_throttle(2, 'Target waypoint: ' + str(self.current_target_wp) + ' of ' + str(len(self.path_x)-1) + ' waypoints')
+                rospy.loginfo_throttle(2, 'Current position: ' + str([self.path_x[wp], self.path_y[wp], self.path_z[wp]]))
+                rospy.loginfo_throttle(2, 'Target waypoint position: ' + str([self.current_position.x, self.current_position.y, self.current_position.z]))
                 if dist < WP_ARRIVED_THREADSHOLD:
                         self.current_target_wp=self.current_target_wp+1
                         if self.current_target_wp > len(self.path_x)-1:
@@ -116,8 +123,9 @@ class QueryPRM(object):
                         return
         
         def goal_reached(self):
+                WP_ARRIVED_THREADSHOLD = 1
                 dist = np.linalg.norm(np.asarray([self.current_position.x, self.current_position.y, self.current_position.z]) - np.asarray(nx.get_node_attributes(self.G, 'pos')['goal']))
-                if dist < 1:
+                if dist < WP_ARRIVED_THREADSHOLD:
                         return True
                 
         def save_solution_graph(self):
